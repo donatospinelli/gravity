@@ -67,11 +67,11 @@ const mouseControl = MouseConstraint.create(engine, {
 	}
 });
 
-const initialShape = Composites.stack(50, 50, 15, 5, 40, 40, function(x, y) {
+const initialShapes = Composites.stack(50, 50, 15, 5, 40, 40, function(x, y) {
 	return createShape(x, y);
 });
 
-World.add(engine.world, [ bigBall, ground, ceiling, leftWall, rightWall, mouseControl, initialShape ]);
+World.add(engine.world, [ bigBall, ground, ceiling, leftWall, rightWall, mouseControl, initialShapes ]);
 
 // when we click the page, add a new shape
 
