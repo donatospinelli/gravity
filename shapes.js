@@ -28,7 +28,7 @@ const renderer = Matter.Render.create({
 // here we go with the shape
 
 const createShape = function(x, y) {
-	return Bodies.circle(x, y, 50, {
+	return Bodies.circle(x, y, 25 + 25 * Math.random(), {
 		render: {
 			sprite: {
 				texture: 'bg.png',
