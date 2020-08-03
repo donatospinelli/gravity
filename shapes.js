@@ -1,21 +1,23 @@
-// two separate thing matter needs
-// first thing: an engine -
-// second thing: a renderer
+// two separate things matter needs
+// first thing: an engine - computation and math behind this
+// second thing: a renderer - this draws the engine
 
-const { Engine, Render, Bodies, World, MouseConstraint, Composites } = Matter;
+// alias is a shortcut to make our code cleaner
+// const Engine = Matter.Engine
+// const Render = Matter.Render
+const { Engine, Render, Bodies, World, MouseConstraint, Composites, Query } = Matter;
 
-//where matter being deployed
+// where is matter being deployed
 const sectionTag = document.querySelector('section.shapes');
 
-//what is the widht ad the height of the page
+// what is the width and height of the page
 const w = window.innerWidth;
 const h = window.innerHeight;
 
-const engine = Matter.Engine.create();
-const renderer = Matter.Render.create({
+const engine = Engine.create();
+const renderer = Render.create({
 	element: sectionTag,
 	engine: engine,
-
 	options: {
 		height: h,
 		width: w,
@@ -25,21 +27,34 @@ const renderer = Matter.Render.create({
 	}
 });
 
-// here we go with the shape
-
+// have the ability to create a brand new shape
 const createShape = function(x, y) {
-	return Bodies.circle(x, y, 25 + 25 * Math.random(), {
-		render: {
-			sprite: {
-				texture: 'bg.png',
-				xScale: 0.45,
-				yScale: 0.45
+	const randomNum = Math.random();
+
+	if (randomNum > 0.9) {
+		return Bodies.rectangle(x, y, 38, 50, {
+			render: {
+				sprite: {
+					texture: 'outline-2x.png',
+					xScale: 0.5,
+					yScale: 0.5
+				}
 			}
-		}
-	});
+		});
+	} else {
+		return Bodies.circle(x, y, 25, {
+			render: {
+				sprite: {
+					texture: 'ball.png',
+					xScale: 0.5,
+					yScale: 0.5
+				}
+			}
+		});
+	}
 };
 
-const bigBall = Bodies.circle(w / 2, h / 2, 200, {
+const bigBall = Bodies.circle(w / 2, h / 2, Math.min(w / 4, h / 4), {
 	isStatic: true,
 	render: {
 		fillStyle: '#ffffff'
@@ -54,7 +69,7 @@ const wallOptions = {
 };
 
 const ground = Bodies.rectangle(w / 2, h + 50, w + 100, 100, wallOptions);
-const ceiling = Bodies.rectangle(w / 2, 50, w + 100, 100, wallOptions);
+const ceiling = Bodies.rectangle(w / 2, -50, w + 100, 100, wallOptions);
 const leftWall = Bodies.rectangle(-50, h / 2, 100, h + 100, wallOptions);
 const rightWall = Bodies.rectangle(w + 50, h / 2, 100, h + 100, wallOptions);
 
@@ -74,13 +89,40 @@ const initialShapes = Composites.stack(50, 50, 15, 5, 40, 40, function(x, y) {
 World.add(engine.world, [ bigBall, ground, ceiling, leftWall, rightWall, mouseControl, initialShapes ]);
 
 // when we click the page, add a new shape
-
 document.addEventListener('click', function(event) {
 	const shape = createShape(event.pageX, event.pageY);
 	World.add(engine.world, shape);
 });
 
-// run both the engine, and the renderer
+// when we move our mouse, check matter for any collision
+// does the mouse touch a body
+document.addEventListener('mousemove', function(event) {
+	const vector = { x: event.pageX, y: event.pageY };
+	const hoveredShapes = Query.point(initialShapes.bodies, vector);
 
+	hoveredShapes.forEach((shape) => {
+		shape.render.sprite = null;
+		shape.render.fillStyle = 'red';
+	});
+});
+
+// run both the engine, and the renderer
 Engine.run(engine);
 Render.run(renderer);
+
+// let time = 0
+// const changeGravity = function () {
+//   time = time + 0.001
+//
+//   engine.world.gravity.x = Math.sin(time)
+//   engine.world.gravity.y = Math.cos(time)
+//
+//   requestAnimationFrame(changeGravity)
+// }
+//
+// changeGravity()
+
+window.addEventListener('deviceorientation', function(event) {
+	engine.world.gravity.x = event.gamma / 30;
+	engine.world.gravity.y = event.beta / 30;
+});
